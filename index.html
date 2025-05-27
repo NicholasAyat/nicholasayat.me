@@ -25,6 +25,14 @@ Last Updated: April 25, 2025
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Ubuntu:wght@400;500;700&display=swap"/>
 </head>
 <body>
+    <!-- Intro Overlay -->
+    <div id="intro-overlay">
+        <div class="intro-content">
+            <img src="images/Nfull.png" alt="Logo" class="intro-logo" />
+            <h1 class="intro-title">Nicholas Ayat</h1>
+            <p class="intro-tagline">Personal Portfolio</p>
+        </div>
+    </div>
 
 	<!-- Scroll Up Button -->
 
@@ -36,7 +44,7 @@ Last Updated: April 25, 2025
 
     <nav class="navbar">
         <div class="max-width">
-            <div class="logo"><img src="images/Nfull.png"/></div>
+            <div class="logo"><a href="index.html"><img src="images/Nfull.png"/></a></div>
             <ul class="menu">
                 <li><a href="#home" class="menu-btn">Home</a></li>
                 <li><a href="#about" class="menu-btn">About</a></li>
@@ -93,30 +101,33 @@ Feel free to check out my projects and drop me a line if you want to chat tech, 
             <h2 class="title">My Projects</h2>
 			
             <div class="serv-content">
+                <a href="https://github.com/NicholasAyat/nicholasayat.me" target="_blank" class="card-link">
                 <div class="card">
                     <div class="box">
                         <i class="fa fa-desktop"></i>
                         <div class="text">Personal Web <br> Portfolio</div>
-                        <p>A fully fleshed out personal portfolio (nicholasayat.me) engineered by myself using HTML, CSS, JS, and PHP. <br><br> Made open-source on <a href="https://github.com/NicholasAyat/nicholasayat.me"target="_blank">GitHub. </a></p>
+                        <p>A fully fleshed out personal portfolio (nicholasayat.me) engineered by myself using HTML, CSS, JS, and PHP. <br><br> Made open-source on GitHub. </p>
                     </div>
                 </div>
-				
+                </a>
+                <a href="https://github.com/NicholasAyat/PathfindingVisualizationTool" target="_blank" class="card-link">
                 <div class="card">
                     <div class="box">
                         <i class="fa fa-eye"></i>
                         <div class="text">Pathfinding Visualization</div>
-                        <p>An interactive visualization tool to help students understand the complex concepts of Graph Theory and tree data structures. <br><br> Available on <a href="https://github.com/NicholasAyat/PathfindingVisualizationTool"target="_blank">GitHub. </a></p>
+                        <p>An interactive visualization tool to help students understand the complex concepts of Graph Theory and tree data structures. <br><br> Available on GitHub. </p>
                     </div>
                 </div>
-				
+                </a>
+                <a href="https://github.com/NicholasAyat/NickelPal" target="_blank" class="card-link">
                 <div class="card">
                     <div class="box">
                         <i class="fa fa-money"></i>
                         <div class="text">NickelPal <br> Web App</div>
-                        <p>A full-stack web application designed to facilitate stock trading using a sophisticated trading bot. <br><br> Available on <a href="https://github.com/NicholasAyat/NickelPal"target="_blank">GitHub. </a></p>
+                        <p>A full-stack web application designed to facilitate stock trading using a sophisticated trading bot. <br><br> Available on GitHub. </p>
                     </div>
                 </div>
-               </div>
+                </a>
             </div>
         </div>
     </section>
@@ -155,26 +166,22 @@ Feel free to check out my projects and drop me a line if you want to chat tech, 
                 </div>
                 <div class="column right">
                     <div class="text">Message me</div>
-					
-                    <form action="mail.php" method="post">
+                    <div id="form-message"></div>
+                    <form action="https://formspree.io/f/xnndepvp" method="POST">
                         <div class="fields">
                             <div class="field name">
-                                <input type="text" placeholder="First & Last Name" required>
+                                <input type="text" name="name" placeholder="First & Last Name" required>
                             </div>
-							
                             <div class="field email">
-                                <input type="email" placeholder="Email" required>
+                                <input type="email" name="email" placeholder="Email" required>
                             </div>
                         </div>
-						
                         <div class="field">
-                            <input type="text" placeholder="Subject" required>
+                            <input type="text" name="subject" placeholder="Subject" required>
                         </div>
-						
                         <div class="field textarea">
-                            <textarea cols="30" rows="10" placeholder="Message..." required></textarea>
+                            <textarea name="message" cols="30" rows="6" placeholder="Message..." required></textarea>
                         </div>
-						
                         <div class="button-area">
                             <button type="submit">Send message</button>
                         </div>
@@ -187,7 +194,7 @@ Feel free to check out my projects and drop me a line if you want to chat tech, 
     <!-- Footer Section -->
 
     <footer>
-        <span>Created By <a href="https://www.linkedin.com/in/nicholasayat/" target="_blank">Nicholas Ayat</a> | <span class="fa fa-copyright"></span> 2024 All rights reserved.</span>
+        <span>Created By <a href="https://www.linkedin.com/in/nicholasayat/" target="_blank" class="footer-link">Nicholas Ayat</a> | <span class="fa fa-copyright"></span> 2025 All rights reserved.</span>
     </footer>
 
     <script src="script.js"></script>

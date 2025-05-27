@@ -120,3 +120,72 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(message);
   }
 });
+
+// Contact Form Handling
+$(document).ready(function() {
+    $('form[action*="formspree.io"]').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const messageDiv = $('#form-message');
+        
+        // Disable submit button and show loading state
+        const submitBtn = form.find('button[type="submit"]');
+        const originalBtnText = submitBtn.text();
+        submitBtn.prop('disabled', true).text('Sending...');
+        
+        // Clear previous messages
+        messageDiv.removeClass('success error').empty();
+        
+        // Send form data
+        $.ajax({
+            type: 'POST',
+            url: form.attr('action'),
+            data: form.serialize(),
+            dataType: 'json',
+            success: function(response) {
+                messageDiv.addClass('success').text('Message sent successfully! I will get back to you soon.');
+                form[0].reset();
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred. Please try again later.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                messageDiv.addClass('error').text(errorMessage);
+            },
+            complete: function() {
+                // Re-enable submit button
+                submitBtn.prop('disabled', false).text(originalBtnText);
+            }
+        });
+    });
+});
+
+// Section Fade-In on Scroll
+$(document).ready(function() {
+    const $sections = $('section');
+    $sections.addClass('fade-in-section');
+    function revealSections() {
+        $sections.each(function() {
+            const $section = $(this);
+            const rect = this.getBoundingClientRect();
+            if (rect.top < window.innerHeight - 80) {
+                $section.addClass('visible');
+            }
+        });
+    }
+    revealSections();
+    $(window).on('scroll resize', revealSections);
+});
+
+// Intro Overlay Animation on Page Load
+window.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.getElementById('intro-overlay');
+    if (overlay) {
+        setTimeout(() => {
+            overlay.classList.add('hide');
+            setTimeout(() => overlay.remove(), 900);
+        }, 1500);
+    }
+});

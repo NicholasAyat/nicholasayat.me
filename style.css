@@ -19,6 +19,7 @@ Last Updated: September 30, 2023
 }
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 80px;
 }
 
 /* Custom Scroll */
@@ -125,12 +126,27 @@ section .title::after {
     font-weight: 500;
     margin-left: 25px;
     transition: color 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 .navbar .menu li a:hover {
     color: #d6212e;
 }
 .navbar.sticky .menu li a:hover {
     color: #fff;
+}
+.navbar .menu li a::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: #d6212e;
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: left;
+}
+.navbar .menu li a:hover::after {
+    transform: scaleX(1);
 }
 
 /* Menu Button Styling */
@@ -159,6 +175,7 @@ section .title::after {
     opacity: 0;
     pointer-events: none;
     transition: all 0.3s ease;
+    transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 .scroll-up-btn.show {
     bottom: 30px;
@@ -167,6 +184,8 @@ section .title::after {
 }
 .scroll-up-btn:hover {
     filter: brightness(90%);
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(214,33,46,0.15);
 }
 
 
@@ -283,17 +302,24 @@ section .title::after {
     background: #111;
     content: "View My Work";
 }
+.projects .serv-content {
+    display: flex;
+    gap: 20px;
+}
 .projects .serv-content .card {
-    width: calc(33% - 20px);
+    width: 100%;
     background: #222;
     text-align: center;
     border-radius: 6px;
     padding: 50px 25px;
     cursor: pointer;
     transition: all 0.3s ease;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1);
 }
 .projects .serv-content .card:hover {
     background: #d6212e;
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(214,33,46,0.12);
 }
 .projects .serv-content .card .box {
     transition: all 0.3s ease;
@@ -352,41 +378,40 @@ section .title::after {
 .contact .contact-content .info .sub-title {
     color: #333;
 }
+.contact .right form label {
+    display: none;
+}
 .contact .right form .fields {
     display: flex;
+    gap: 20px;
 }
-.contact .right form .field,
-.contact .right form .fields .field {
-    height: 45px;
-    width: 100%;
-    margin-bottom: 15px;
+.contact .right form .field {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-bottom: 18px;
 }
-.contact .right form .textarea {
-    height: 80px;
-    width: 100%;
+.contact .right form .field input,
+.contact .right form .field textarea {
+    margin-top: 0;
+    font-size: 17px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: border 0.2s;
+}
+.contact .right form .field textarea {
+    min-height: 120px;
+    resize: vertical;
 }
 .contact .right form .name {
     margin-right: 10px;
 }
-.contact .right form .field input,
-.contact .right form .textarea textarea {
-    height: 100%;
-    width: 100%;
-    border: 1px solid lightgrey;
-    border-radius: 6px;
-    outline: none;
-    padding: 0 15px;
-    font-size: 17px;
-    font-family: 'Poppins', sans-serif;
-    transition: all 0.3s ease;
-}
 .contact .right form .field input:focus,
-.contact .right form .textarea textarea:focus {
-    border-color: #b3b3b3;
-}
-.contact .right form .textarea textarea {
-  padding-top: 10px;
-  resize: none;
+.contact .right form .field textarea:focus {
+    border-color: #d6212e;
+    box-shadow: 0 0 0 2px rgba(214,33,46,0.15);
 }
 .contact .right form .button-area {
   display: flex;
@@ -406,10 +431,13 @@ section .title::after {
   background: #d6212e;
   border: 2px solid #d6212e;
   transition: all 0.3s ease;
+  transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 .right form .button-area button:hover {
   color: #d6212e;
   background: none;
+  transform: scale(1.05);
+  box-shadow: 0 4px 18px rgba(214,33,46,0.15);
 }
 
 /* Footer Section Styling */
@@ -428,6 +456,16 @@ footer span a:hover {
     text-decoration: underline;
 }
 
+.footer-link {
+    color: #d6212e;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.footer-link:hover, .footer-link:focus {
+    color: #a3121c;
+    text-decoration: underline wavy;
+}
 
 /* Media Queries */
 
@@ -498,9 +536,12 @@ footer span a:hover {
     .about .about-content .right {
         flex: 100%;
     }
-    .projects .serv-content .card {
-        width: calc(50% - 10px);
-        margin-bottom: 20px;
+    .projects .serv-content {
+        flex-direction: column;
+        gap: 0;
+    }
+    .card-link {
+        max-width: 100%;
     }
     .skills .skills-content .column,
     .contact .contact-content .column {
@@ -529,6 +570,10 @@ footer span a:hover {
 		max-width: 100%;
         height: auto;
 	}
+    .contact .right form .fields {
+        flex-direction: column;
+        gap: 0;
+    }
 }
 
 @media (max-width: 500px) {
@@ -560,4 +605,221 @@ footer span a:hover {
         font-size: 23px;
         line-height: 38px;
     }
+}
+
+/* Form Message Styles */
+#form-message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 4px;
+    display: none;
+}
+
+#form-message.success {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#form-message.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Disable form while submitting */
+#contact-form.submitting {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* 1. Section Fade-In/Slide-Up Animation */
+section.fade-in-section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+section.fade-in-section.visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* 2. Button Hover Scale/Shadow */
+.right form .button-area button, .scroll-up-btn {
+    transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.right form .button-area button:hover, .scroll-up-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(214,33,46,0.15);
+}
+
+/* 3. Input Focus Glow */
+.contact .right form .field input:focus,
+.contact .right form .field textarea:focus {
+    border-color: #d6212e;
+    box-shadow: 0 0 0 2px rgba(214,33,46,0.15);
+}
+
+/* 4. Project Card Hover Lift */
+.projects .serv-content .card {
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.projects .serv-content .card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(214,33,46,0.12);
+}
+
+/* 5. Navigation Underline Animation */
+.navbar .menu li a {
+    position: relative;
+    overflow: hidden;
+}
+.navbar .menu li a::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: #d6212e;
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: left;
+}
+.navbar .menu li a:hover::after {
+    transform: scaleX(1);
+}
+
+/* Enhanced Intro Overlay Animation */
+#intro-overlay {
+    position: fixed;
+    z-index: 99999;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(120deg, #111 80%, #222 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1), transform 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+#intro-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -60%;
+    width: 60%; height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
+    transform: skewX(-20deg);
+    animation: sweep-light 1.6s 0.2s cubic-bezier(0.4,0,0.2,1) forwards;
+    pointer-events: none;
+}
+@keyframes sweep-light {
+    0% { left: -60%; }
+    100% { left: 120%; }
+}
+#intro-overlay.hide {
+    opacity: 0;
+    transform: translateY(-100px);
+    pointer-events: none;
+}
+.intro-content {
+    text-align: center;
+    color: #fff;
+    position: relative;
+}
+.intro-logo {
+    width: 110px;
+    margin-bottom: 18px;
+    filter: drop-shadow(0 2px 12px #d6212e44);
+    opacity: 0;
+    transform: scale(0.7);
+    animation: logo-pop 0.7s 0.2s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+@keyframes logo-pop {
+    0% { opacity: 0; transform: scale(0.7); }
+    80% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.intro-title {
+    font-size: 2.7rem;
+    font-family: 'Ubuntu', sans-serif;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    display: inline-block;
+    border-right: 2px solid #d6212e;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 0;
+    opacity: 0;
+    animation: typewriter 1.1s 0.7s steps(30, end) forwards, blink-caret 0.7s 1.8s steps(1) 2;
+}
+@keyframes typewriter {
+    0% { width: 0; opacity: 1; }
+    100% { width: 17ch; opacity: 1; }
+}
+@keyframes blink-caret {
+    0%, 100% { border-color: #d6212e; }
+    50% { border-color: transparent; }
+}
+.intro-tagline {
+    font-size: 1.2rem;
+    color: #d6212e;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: tagline-in 0.7s 1.9s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+@keyframes tagline-in {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: none; }
+}
+
+/* Social Links Hover Animation */
+.contact .contact-content .icons .row {
+    transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.contact .contact-content .icons .row:hover {
+    transform: scale(1.06);
+}
+.contact .contact-content .icons .row .info .sub-title a {
+    position: relative;
+    color: #1a0dab;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s cubic-bezier(0.4,0,0.2,1);
+    cursor: pointer;
+}
+.contact .contact-content .icons .row .info .sub-title a::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -2px;
+    height: 2px;
+    background: #d6212e;
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: left;
+}
+.contact .contact-content .icons .row:hover .info .sub-title a {
+    color: #d6212e;
+}
+.contact .contact-content .icons .row:hover .info .sub-title a::after {
+    transform: scaleX(1);
+}
+.contact .contact-content .icons .row:hover i {
+    color: #d6212e;
+    transition: color 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+.card-link {
+    display: block;
+    flex: 1 1 0;
+    min-width: 300px;
+    margin: 0 10px;
+    text-decoration: none;
+    color: inherit;
+}
+.card-link .card {
+    cursor: pointer;
 }
