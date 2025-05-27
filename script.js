@@ -51,7 +51,7 @@ $(document).ready(function () {
 
   // Typing Text Seen on Home Page
   var typed = new Typed(".typing", {
-    strings: ["Computer Science Student", "Software Engineer", "Leader"],
+    strings: ["Computer Science Student", "Software Engineer", "Team Player"],
     typeSpeed: 100,
     backSpeed: 60,
     loop: true,
