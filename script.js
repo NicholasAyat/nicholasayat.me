@@ -1,7 +1,7 @@
 /*
 
 Document Name: script.js
-Last Updated: May 27, 2025
+Last Updated: August 2, 2023
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- NICHOLAS AYAT -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
@@ -51,7 +51,7 @@ $(document).ready(function () {
 
   // Typing Text Seen on Home Page
   var typed = new Typed(".typing", {
-    strings: ["Computer Science Student", "Software Engineer", "Team Player"],
+    strings: ["Computer Science Student", "Software Engineer", "Leader"],
     typeSpeed: 100,
     backSpeed: 60,
     loop: true,
