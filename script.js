@@ -69,99 +69,6 @@ $(document).ready(function () {
   });
 });
 
-// Mail Section
-
-document.addEventListener("DOMContentLoaded", () => {
-  const contactForm = document.querySelector(".contact form");
-
-  contactForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const formData = new FormData(contactForm);
-    const data = Object.fromEntries(formData.entries());
-
-    // Validation for form fields
-    if (!data.name || !data.email || !data.subject || !data.message) {
-      showMessage("Please fill in all fields.", "error");
-      return;
-    }
-
-    try {
-      await sendMessage(data);
-      showMessage("Message sent successfully!", "success");
-      contactForm.reset();
-    } catch (error) {
-      showMessage("An error occurred. Please try again later.", "error");
-    }
-  });
-
-  async function sendMessage(data) {
-    // Server-side script
-    const url = "smtp.elasticemail.com";
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send message.");
-      }
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  function showMessage(message, type) {
-    console.log(message);
-  }
-});
-
-// Contact Form Handling
-$(document).ready(function() {
-    $('form[action*="formspree.io"]').on('submit', function(e) {
-        e.preventDefault();
-        
-        const form = $(this);
-        const messageDiv = $('#form-message');
-        
-        // Disable submit button and show loading state
-        const submitBtn = form.find('button[type="submit"]');
-        const originalBtnText = submitBtn.text();
-        submitBtn.prop('disabled', true).text('Sending...');
-        
-        // Clear previous messages
-        messageDiv.removeClass('success error').empty();
-        
-        // Send form data
-        $.ajax({
-            type: 'POST',
-            url: form.attr('action'),
-            data: form.serialize(),
-            dataType: 'json',
-            success: function(response) {
-                messageDiv.addClass('success').text('Message sent successfully! I will get back to you soon.');
-                form[0].reset();
-            },
-            error: function(xhr) {
-                let errorMessage = 'An error occurred. Please try again later.';
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage = xhr.responseJSON.error;
-                }
-                messageDiv.addClass('error').text(errorMessage);
-            },
-            complete: function() {
-                // Re-enable submit button
-                submitBtn.prop('disabled', false).text(originalBtnText);
-            }
-        });
-    });
-});
-
 // Section Fade-In on Scroll
 $(document).ready(function() {
     const $sections = $('section');
@@ -403,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Smart Preloading System
 class SmartPreloader {
     constructor() {
+        this.sections = document.querySelectorAll('section'); // Query sections once
         this.preloadedSections = new Set();
         this.preloadQueue = [];
         this.isPreloading = false;
@@ -451,11 +359,10 @@ class SmartPreloader {
     }
     
     checkUpcomingSections() {
-        const sections = document.querySelectorAll('section');
         const viewportHeight = window.innerHeight;
         const scrollY = window.scrollY;
         
-        sections.forEach(section => {
+        this.sections.forEach(section => {
             const rect = section.getBoundingClientRect();
             const sectionTop = scrollY + rect.top;
             const distanceToSection = sectionTop - (scrollY + viewportHeight);
@@ -501,10 +408,9 @@ class SmartPreloader {
     }
     
     getCurrentSection() {
-        const sections = document.querySelectorAll('section');
         const scrollY = window.scrollY + window.innerHeight / 2;
         
-        for (let section of sections) {
+        for (let section of this.sections) {
             const rect = section.getBoundingClientRect();
             const sectionTop = window.scrollY + rect.top;
             const sectionBottom = sectionTop + rect.height;
@@ -966,9 +872,19 @@ function initSectionNavigation() {
             showNavigation(); // Show dots when section changes
         }
         
-        // Update active state
+        // Update active state for section dots
         nav.querySelectorAll('.section-nav-dot').forEach((dot, index) => {
             dot.classList.toggle('active', index === activeIndex);
+        });
+
+        // Update active state for main navbar menu items
+        const menuLinks = document.querySelectorAll('.navbar .menu li a');
+        menuLinks.forEach((link, index) => {
+            // The sections array maps directly to the menu links order
+            // Home (index 0) -> sections[0] ('home')
+            // About (index 1) -> sections[1] ('about')
+            // etc.
+            link.classList.toggle('active', index === activeIndex);
         });
     }
     
@@ -1061,66 +977,38 @@ function initEnhancedFormValidation() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        let isValid = true;
-        let hasErrors = false;
+        let allFieldsValid = true;
         
-        // First, validate all fields and force error display
+        // Validate all fields and update their UI (error messages/classes)
         formFields.forEach(wrapper => {
             const field = wrapper.querySelector('input, textarea');
             const errorMsg = wrapper.querySelector('.field-error');
             
+            // validateField updates UI and returns true if valid, false if not
             if (!validateField(field, wrapper, errorMsg)) {
-                isValid = false;
-                hasErrors = true;
+                allFieldsValid = false;
             }
         });
         
-        // Double-check: also verify no error classes exist
+        // After all fields have been validated and UI updated,
+        // check if any field still has an error class.
         const errorFields = form.querySelectorAll('.form-field.error');
-        if (errorFields.length > 0) {
-            hasErrors = true;
-            isValid = false;
-        }
         
-        // Additional check: validate field contents directly
-        const nameField = form.querySelector('input[name="name"]');
-        const emailField = form.querySelector('input[name="email"]');
-        const subjectField = form.querySelector('input[name="subject"]');
-        const messageField = form.querySelector('textarea[name="message"]');
-        
-        if (!nameField?.value.trim() || nameField.value.trim().length < 2) {
-            isValid = false;
-        }
-        
-        if (!emailField?.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value.trim())) {
-            isValid = false;
-        }
-        
-        if (!subjectField?.value.trim() || subjectField.value.trim().length < 3) {
-            isValid = false;
-        }
-        
-        if (!messageField?.value.trim() || messageField.value.trim().length < 10) {
-            isValid = false;
-        }
-        
-        // Only submit if all validations pass
-        if (isValid && !hasErrors) {
+        if (errorFields.length === 0 && allFieldsValid) {
+            // No error classes found AND allFieldsValid was never set to false
             await submitForm(form);
         } else {
-            // Show an alert or message if there are still errors
+            // Show a general error message if any field is invalid
             console.log('Form submission prevented due to validation errors');
-            
-            // Show user-friendly message
             showMessage('Please fix the errors below before submitting.', 'error');
             
-            // Scroll to first error field
-            const firstErrorField = form.querySelector('.form-field.error');
-            if (firstErrorField) {
+            // Scroll to the first field with an error class, if any
+            if (errorFields.length > 0) {
+                const firstErrorField = errorFields[0];
                 firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                const inputField = firstErrorField.querySelector('input, textarea');
-                if (inputField) {
-                    setTimeout(() => inputField.focus(), 300);
+                const inputFieldToFocus = firstErrorField.querySelector('input, textarea');
+                if (inputFieldToFocus) {
+                    setTimeout(() => inputFieldToFocus.focus(), 300);
                 }
             }
         }
@@ -1262,16 +1150,58 @@ async function submitForm(form) {
 
 function showMessage(message, type) {
     const messageDiv = document.getElementById('form-message');
-    
+    const contactForm = document.getElementById('contact-form');
+    const extraSpace = 40;
+
+    // 1. Clear any existing timeouts for hiding and previous animation listeners
+    if (messageDiv.hideTimeout) {
+        clearTimeout(messageDiv.hideTimeout);
+    }
+    if (messageDiv.appearingAnimationEndHandler) {
+        messageDiv.removeEventListener('animationend', messageDiv.appearingAnimationEndHandler);
+    }
+    if (messageDiv.hidingAnimationEndHandler) {
+        messageDiv.removeEventListener('animationend', messageDiv.hidingAnimationEndHandler);
+    }
+
+    // 2. Reset form padding and message state thoroughly
+    contactForm.style.paddingTop = '0px';
+    messageDiv.classList.remove('form-message-appearing', 'form-message-hiding');
+    messageDiv.style.display = 'none'; // Ensure it's hidden to clear any animation state
+    void messageDiv.offsetWidth; // Force a reflow
+
+    // 3. Set content and make it visible for measurement
     messageDiv.textContent = message;
-    messageDiv.className = type;
-    messageDiv.style.display = 'block';
-    
-    // Auto-hide success messages after 5 seconds
-    if (type === 'success') {
-        setTimeout(() => {
-            messageDiv.style.display = 'none';
-        }, 5000);
+    messageDiv.className = 'form-message'; // Reset classes to base
+    messageDiv.classList.add(type);      // Add 'success' or 'error'
+    messageDiv.style.display = 'block';  // Make it visible to measure
+
+    // 4. Measure height and set form padding (BEFORE animation class is added)
+    const messageHeight = messageDiv.offsetHeight;
+    contactForm.style.paddingTop = `${messageHeight + extraSpace}px`;
+
+    // 5. Add appearing animation class
+    messageDiv.classList.add('form-message-appearing');
+
+    // 6. Setup animation end listener for appearing animation
+    messageDiv.appearingAnimationEndHandler = () => {
+        messageDiv.classList.remove('form-message-appearing');
+        // No need to remove this listener as {once: true} handles it, but good practice if not using once
+    };
+    messageDiv.addEventListener('animationend', messageDiv.appearingAnimationEndHandler, { once: true });
+
+    // 7. Auto-hide messages
+    if (type === 'success' || type === 'error') {
+        messageDiv.hideTimeout = setTimeout(() => {
+            messageDiv.classList.add('form-message-hiding');
+            
+            messageDiv.hidingAnimationEndHandler = () => {
+                messageDiv.style.display = 'none';
+                contactForm.style.paddingTop = '0px';
+                messageDiv.classList.remove('form-message-hiding');
+            };
+            messageDiv.addEventListener('animationend', messageDiv.hidingAnimationEndHandler, { once: true });
+        }, 8000);
     }
 }
 

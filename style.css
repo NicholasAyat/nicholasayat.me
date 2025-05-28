@@ -468,7 +468,7 @@ section .title::after {
     position: fixed;
     width: 100%;
     z-index: 999;
-    padding: 30px 0;
+    padding: 20px 0; /* Reduced padding to move navbar up when not sticky */
     font-family: 'Inter', sans-serif;
     transition: all 0.3s ease;
 }
@@ -527,6 +527,27 @@ section .title::after {
 }
 .navbar .menu li a:hover::after {
     transform: scaleX(1);
+}
+
+/* Active Navigation Link Style */
+.navbar .menu li a.active {
+    color: #d6212e !important; /* Default active color for sticky navbar */
+}
+
+/* Brighter active 'Home' link when navbar is NOT sticky (transparent over hero) */
+.navbar:not(.sticky) .menu li a.active {
+    color: #ffffff !important; /* White text for better contrast on dark hero */
+}
+
+/* General style for active link underline (red by default) */
+.navbar .menu li a.active::after {
+    transform: scaleX(1) !important; /* Keep underline visible */
+    background: #d6212e !important; /* Red underline for sticky navbar and other active links */
+}
+
+/* Specific override for Home link underline when navbar is NOT sticky */
+.navbar:not(.sticky) .menu li a.active[href="#home"]::after {
+    background: #ffffff !important; /* White underline for consistency on dark hero */
 }
 
 /* Menu Button Styling */
@@ -1232,6 +1253,7 @@ section .title::after {
 }
 .contact .contact-content .column {
     width: calc(50% - 30px);
+    position: relative; /* Added for absolute positioning of child #form-message */
 }
 .contact .contact-content .text {
     font-size: 20px;
@@ -1269,8 +1291,10 @@ section .title::after {
 #contact-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Reduced from 20px */
     width: 100%;
+    padding-top: 0; /* Initial padding, will be adjusted by JS */
+    transition: padding-top 0.3s ease-out; /* Smooth transition for padding change */
 }
 
 .form-row {
@@ -1283,12 +1307,12 @@ section .title::after {
     position: relative;
     flex: 1;
     min-width: 0;
-    margin-bottom: 30px;
+    margin-bottom: 15px; /* Reduced from 30px */
     transition: margin-bottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .form-field.error {
-    margin-bottom: 35px;
+    margin-bottom: 20px; /* Reduced from 35px (15px + 5px for error) */
 }
 
 .form-field input,
@@ -1354,7 +1378,7 @@ section .title::after {
 }
 
 .form-field textarea + .field-success {
-    top: 20px;
+    top: 15px; /* Adjusted from 20px to move it closer to the top edge */
     transform: translateY(0);
 }
 
@@ -1464,27 +1488,52 @@ section .title::after {
 
 /* Form Message */
 #form-message {
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */ /* Will be applied conditionally or when visible */
     padding: 15px 20px;
     border-radius: 8px;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    display: none;
-    animation: slideIn 0.3s ease-out;
+    display: none; /* Default to hidden */
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    box-sizing: border-box;
+
+    /* Absolute positioning */
+    position: absolute;
+    top: 50px; /* Increased from 35px for more space below "Message me" title */
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 10;
+    /* margin-bottom: 15px; */ /* Removed: Will be handled by JS adjusting form padding-top */
+}
+
+#form-message.visible {
+    display: block; /* Show the message */
 }
 
 #form-message.success {
-    display: block;
+    /* display: block; */ /* Visibility controlled by .visible class */
     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
     color: #166534;
     border: 1px solid #22c55e;
 }
 
 #form-message.error {
-    display: block;
+    /* display: block; */ /* Visibility controlled by .visible class */
     background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     color: #dc2626;
     border: 1px solid #ef4444;
+}
+
+/* Class to trigger appearing animation */
+#form-message.form-message-appearing {
+    animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Class to trigger hiding animation */
+#form-message.form-message-hiding {
+    animation: fadeOutUp 0.5s ease-out forwards;
+    /* Opacity and visibility will be handled by the animation end state */
 }
 
 /* Animations */
@@ -1503,32 +1552,6 @@ section .title::after {
     }
 }
 
-/* Special animation for textarea checkmarks */
-.form-field textarea + .field-success.show {
-    animation: checkmark-pop-textarea 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes checkmark-pop-textarea {
-    0% { 
-        transform: translateY(0) scale(0);
-        opacity: 0;
-    }
-    60% { 
-        transform: translateY(0) scale(1.2);
-        opacity: 1;
-    }
-    100% { 
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -1537,6 +1560,17 @@ section .title::after {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes fadeOutUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 }
 
@@ -2304,11 +2338,11 @@ section.fade-in-section.visible {
 
 /* Force proper form field spacing - override any conflicting rules */
 .form-field {
-    margin-bottom: 30px !important;
+    margin-bottom: 15px !important; /* Reduced from 30px */
 }
 
 .form-field.error {
-    margin-bottom: 35px !important;
+    margin-bottom: 20px !important; /* Reduced from 35px */
 }
 
 /* Form Message */
