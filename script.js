@@ -38,9 +38,21 @@ $(document).ready(function () {
     $("html").css("scrollBehavior", "auto");
   });
 
-  $(".navbar .menu li a").click(function () {
-    // Applies smooth scroll when menu items are clicked
+  $(".navbar .menu li a").click(function (e) {
+    e.preventDefault(); // Prevent default anchor behavior
+    
+    // Get target section from href
+    const targetSection = $(this).attr('href').substring(1);
+    
+    // Smooth scroll to section without changing URL
     $("html").css("scrollBehavior", "smooth");
+    document.getElementById(targetSection).scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+    
+    // Keep URL clean by replacing with base URL
+    history.replaceState(null, null, window.location.pathname);
   });
 
   // Toggle Navigation Bar
@@ -86,27 +98,65 @@ $(document).ready(function() {
     $(window).on('scroll resize', revealSections);
 });
 
+// Reusable Intro Animation Function
+function playIntroAnimation() {
+    // Remove existing overlay if present
+    const existingOverlay = document.getElementById('intro-overlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+    
+    // Create new intro overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'intro-overlay';
+    overlay.innerHTML = `
+        <div class="intro-content">
+            <img src="images/Nminimal.png" alt="Logo" class="intro-logo" />
+            <div class="intro-text">
+                <h1 class="intro-title">Nicholas Ayat</h1>
+            </div>
+        </div>
+    `;
+    
+    // Insert at the beginning of body
+    document.body.insertBefore(overlay, document.body.firstChild);
+    
+    // Hide scrollbar during intro
+    document.body.classList.remove('intro-complete');
+    document.body.classList.add('intro-active');
+    
+    // Add a subtle pulse effect to the overlay
+    overlay.style.animation = 'overlay-pulse 6s ease-in-out infinite';
+    
+    // Timing breakdown:
+    // 1.8s (typewriter delay) + 1.5s (typewriter duration) + 0.4s (flicker duration) = 3.7s
+    setTimeout(() => {
+        overlay.classList.add('hide');
+        setTimeout(() => {
+            overlay.remove();
+            // Show scrollbar after intro completes
+            document.body.classList.remove('intro-active');
+            document.body.classList.add('intro-complete');
+            
+            // Scroll to home section after intro completes
+            const homeSection = document.getElementById('home');
+            if (homeSection) {
+                homeSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }, 1200);
+    }, 3700); // Transition right after the flicker ends
+}
+
 // Intro Overlay Animation on Page Load
 window.addEventListener('DOMContentLoaded', function() {
     const overlay = document.getElementById('intro-overlay');
     if (overlay) {
-        // Hide scrollbar during intro
-        document.body.classList.add('intro-active');
-        
-        // Add a subtle pulse effect to the overlay
-        overlay.style.animation = 'overlay-pulse 6s ease-in-out infinite';
-        
-        // Timing breakdown:
-        // 1.8s (typewriter delay) + 1.5s (typewriter duration) + 0.4s (flicker duration) = 3.7s
-        setTimeout(() => {
-            overlay.classList.add('hide');
-            setTimeout(() => {
-                overlay.remove();
-                // Show scrollbar after intro completes
-                document.body.classList.remove('intro-active');
-                document.body.classList.add('intro-complete');
-            }, 1200);
-        }, 3700); // Transition right after the flicker ends
+        playIntroAnimation();
     } else {
         // If no intro overlay, show scrollbar immediately
         document.body.classList.add('intro-complete');
@@ -739,6 +789,12 @@ function enhanceTouchFeedback() {
 
 // Initialize Smart Preloader
 document.addEventListener('DOMContentLoaded', () => {
+    // Clean URL on page load
+    if (window.location.pathname.endsWith('/index.html') || window.location.hash) {
+        const cleanUrl = window.location.origin + window.location.pathname.replace('/index.html', '') + (window.location.pathname === '/' ? '' : '/');
+        history.replaceState(null, null, cleanUrl);
+    }
+    
     // Only initialize on good connections to avoid wasting bandwidth
     if ('connection' in navigator) {
         const connection = navigator.connection;
@@ -764,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollProgress();
     initSectionNavigation();
     initEnhancedFormValidation();
+    initCleanNavigation();
 });
 
 // Scroll Progress Indicator
@@ -821,6 +878,9 @@ function initSectionNavigation() {
                 behavior: 'smooth',
                 block: 'start'
             });
+            
+            // Keep URL clean by replacing with base URL
+            history.replaceState(null, null, window.location.pathname);
         });
         nav.appendChild(dot);
     });
@@ -1265,3 +1325,69 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Clean Navigation Handler
+function initCleanNavigation() {
+    // Handle all internal anchor links to prevent URL hash changes
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        
+        const href = link.getAttribute('href');
+        
+        // Handle logo clicks (href="/")
+        if (href === '/' || link.closest('.logo')) {
+            e.preventDefault();
+            
+            // Replay intro animation when logo is clicked
+            playIntroAnimation();
+            
+            // Keep URL clean
+            history.replaceState(null, null, window.location.pathname);
+            return;
+        }
+        
+        // Handle internal anchor links (like #home, #about, etc.)
+        if (href && href.startsWith('#')) {
+            e.preventDefault();
+            
+            const targetId = href.substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                // Smooth scroll to target
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                
+                // Keep URL clean
+                history.replaceState(null, null, window.location.pathname);
+            }
+        }
+        
+        // Handle "Back to Home" type links with href="#"
+        if (href === '#') {
+            e.preventDefault();
+            
+            // Scroll to top (home section)
+            const homeSection = document.getElementById('home');
+            if (homeSection) {
+                homeSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            // Keep URL clean
+            history.replaceState(null, null, window.location.pathname);
+        }
+    });
+    
+    // Handle browser back/forward buttons to maintain clean URL
+    window.addEventListener('popstate', () => {
+        history.replaceState(null, null, window.location.pathname);
+    });
+}
