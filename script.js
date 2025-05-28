@@ -994,8 +994,17 @@ function initEnhancedFormValidation() {
             await submitForm(form);
         } else {
             console.log('Form submission prevented due to validation errors');
-            // Show message, but no longer scroll or focus
+            // Temporarily disable smooth scrolling to prevent autoscroll
+            const originalScrollBehavior = document.documentElement.style.scrollBehavior;
+            document.documentElement.style.scrollBehavior = 'auto';
+            
+            // Show message without any scroll or focus behavior
             await showMessage('Please fix the errors below before submitting.', 'error');
+            
+            // Restore original scroll behavior after a brief delay
+            setTimeout(() => {
+                document.documentElement.style.scrollBehavior = originalScrollBehavior || 'smooth';
+            }, 100);
         }
     });
 }
@@ -1071,9 +1080,15 @@ function validateField(field, wrapper, errorMsg) {
     
     // Always update UI based on validation result
     if (!isValid) {
+        // Prevent any potential scroll-to-error behavior
+        const currentScrollTop = window.pageYOffset;
+        
         wrapper.classList.add('error');
         wrapper.classList.remove('success');
         errorMsg.textContent = message;
+        
+        // Ensure scroll position hasn't changed after adding error class
+        window.scrollTo(0, currentScrollTop);
     } else {
         wrapper.classList.remove('error');
         wrapper.classList.add('success');
@@ -1138,6 +1153,9 @@ async function showMessage(message, type) {
     const contactForm = document.getElementById('contact-form');
     const extraSpace = 40;
 
+    // Prevent any potential scroll behavior by temporarily disabling it
+    const currentScrollTop = window.pageYOffset;
+    
     // Clear existing hide timeout
     if (messageDiv.hideTimeout) {
         clearTimeout(messageDiv.hideTimeout);
@@ -1203,7 +1221,10 @@ async function showMessage(message, type) {
     const messageHeight = messageDiv.offsetHeight;
     contactForm.style.paddingTop = `${messageHeight + extraSpace}px`;
     
-    // 5. Wait for the next frame to ensure layout is updated before animation & resolving promise
+    // 5. Ensure scroll position hasn't changed due to layout shifts
+    window.scrollTo(0, currentScrollTop);
+    
+    // 6. Wait for the next frame to ensure layout is updated before animation & resolving promise
     await new Promise(resolve => requestAnimationFrame(resolve));
 
     messageDiv.classList.add('form-message-appearing');
