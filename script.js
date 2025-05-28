@@ -979,38 +979,23 @@ function initEnhancedFormValidation() {
         
         let allFieldsValid = true;
         
-        // Validate all fields and update their UI (error messages/classes)
         formFields.forEach(wrapper => {
             const field = wrapper.querySelector('input, textarea');
             const errorMsg = wrapper.querySelector('.field-error');
             
-            // validateField updates UI and returns true if valid, false if not
             if (!validateField(field, wrapper, errorMsg)) {
                 allFieldsValid = false;
             }
         });
         
-        // After all fields have been validated and UI updated,
-        // check if any field still has an error class.
         const errorFields = form.querySelectorAll('.form-field.error');
         
         if (errorFields.length === 0 && allFieldsValid) {
-            // No error classes found AND allFieldsValid was never set to false
             await submitForm(form);
         } else {
-            // Show a general error message if any field is invalid
             console.log('Form submission prevented due to validation errors');
-            showMessage('Please fix the errors below before submitting.', 'error');
-            
-            // Scroll to the first field with an error class, if any
-            if (errorFields.length > 0) {
-                const firstErrorField = errorFields[0];
-                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                const inputFieldToFocus = firstErrorField.querySelector('input, textarea');
-                if (inputFieldToFocus) {
-                    setTimeout(() => inputFieldToFocus.focus(), 300);
-                }
-            }
+            // Show message, but no longer scroll or focus
+            await showMessage('Please fix the errors below before submitting.', 'error');
         }
     });
 }
@@ -1148,61 +1133,106 @@ async function submitForm(form) {
     }
 }
 
-function showMessage(message, type) {
+async function showMessage(message, type) {
     const messageDiv = document.getElementById('form-message');
     const contactForm = document.getElementById('contact-form');
     const extraSpace = 40;
 
-    // 1. Clear any existing timeouts for hiding and previous animation listeners
+    // Clear existing hide timeout
     if (messageDiv.hideTimeout) {
         clearTimeout(messageDiv.hideTimeout);
+        messageDiv.hideTimeout = null;
     }
+
+    // If the same message of the same type is already visible (even if animating in) 
+    // and not currently hiding, just reset its hide timer.
+    if (messageDiv.style.display === 'block' &&
+        messageDiv.textContent === message &&
+        messageDiv.classList.contains(type) &&
+        !messageDiv.classList.contains('form-message-hiding')) {
+        
+        if (type === 'success' || type === 'error') {
+            messageDiv.hideTimeout = setTimeout(() => {
+                messageDiv.classList.add('form-message-hiding');
+                
+                if (messageDiv.hidingAnimationEndHandler) {
+                    messageDiv.removeEventListener('animationend', messageDiv.hidingAnimationEndHandler);
+                    messageDiv.hidingAnimationEndHandler = null;
+                }
+
+                messageDiv.hidingAnimationEndHandler = () => {
+                    messageDiv.style.display = 'none';
+                    contactForm.style.paddingTop = '0px';
+                    messageDiv.classList.remove('form-message-hiding');
+                    messageDiv.hidingAnimationEndHandler = null;
+                };
+                messageDiv.addEventListener('animationend', messageDiv.hidingAnimationEndHandler, { once: true });
+            }, 8000);
+        }
+        return false; // Indicate that the message was already shown (or appearing) and stable enough
+    }
+
+    // Clear previous animation end listeners robustly
     if (messageDiv.appearingAnimationEndHandler) {
         messageDiv.removeEventListener('animationend', messageDiv.appearingAnimationEndHandler);
+        messageDiv.appearingAnimationEndHandler = null;
     }
     if (messageDiv.hidingAnimationEndHandler) {
         messageDiv.removeEventListener('animationend', messageDiv.hidingAnimationEndHandler);
+        messageDiv.hidingAnimationEndHandler = null;
     }
 
-    // 2. Reset form padding and message state thoroughly
-    contactForm.style.paddingTop = '0px';
+    // 1. Stop any current animations and hide the message div first.
     messageDiv.classList.remove('form-message-appearing', 'form-message-hiding');
-    messageDiv.style.display = 'none'; // Ensure it's hidden to clear any animation state
-    void messageDiv.offsetWidth; // Force a reflow
+    messageDiv.style.display = 'none'; 
+    void messageDiv.offsetWidth; // Force a reflow to apply display:none and class changes immediately
 
-    // 3. Set content and make it visible for measurement
+    // 2. Now that the message area is definitively gone, reset the form's padding.
+    contactForm.style.paddingTop = '0px'; 
+    // Force a reflow again if needed, though the subsequent padding set might be enough
+    // void contactForm.offsetWidth; 
+
+    // 3. Set content and prepare messageDiv for display (still display:none until height is measured)
     messageDiv.textContent = message;
     messageDiv.className = 'form-message'; // Reset classes to base
     messageDiv.classList.add(type);      // Add 'success' or 'error'
-    messageDiv.style.display = 'block';  // Make it visible to measure
+    // messageDiv.style.display = 'block'; // Will be set to block just before measurement
 
-    // 4. Measure height and set form padding (BEFORE animation class is added)
+    // 4. Make it visible to measure, measure height, and set form padding
+    messageDiv.style.display = 'block';  // Make it visible to measure
     const messageHeight = messageDiv.offsetHeight;
     contactForm.style.paddingTop = `${messageHeight + extraSpace}px`;
+    
+    // 5. Wait for the next frame to ensure layout is updated before animation & resolving promise
+    await new Promise(resolve => requestAnimationFrame(resolve));
 
-    // 5. Add appearing animation class
     messageDiv.classList.add('form-message-appearing');
 
-    // 6. Setup animation end listener for appearing animation
     messageDiv.appearingAnimationEndHandler = () => {
         messageDiv.classList.remove('form-message-appearing');
-        // No need to remove this listener as {once: true} handles it, but good practice if not using once
+        messageDiv.appearingAnimationEndHandler = null; 
     };
     messageDiv.addEventListener('animationend', messageDiv.appearingAnimationEndHandler, { once: true });
 
-    // 7. Auto-hide messages
     if (type === 'success' || type === 'error') {
         messageDiv.hideTimeout = setTimeout(() => {
             messageDiv.classList.add('form-message-hiding');
             
+            if (messageDiv.hidingAnimationEndHandler) {
+                messageDiv.removeEventListener('animationend', messageDiv.hidingAnimationEndHandler);
+                messageDiv.hidingAnimationEndHandler = null;
+            }
+
             messageDiv.hidingAnimationEndHandler = () => {
                 messageDiv.style.display = 'none';
                 contactForm.style.paddingTop = '0px';
                 messageDiv.classList.remove('form-message-hiding');
+                messageDiv.hidingAnimationEndHandler = null; 
             };
             messageDiv.addEventListener('animationend', messageDiv.hidingAnimationEndHandler, { once: true });
         }, 8000);
     }
+    return true; // Indicate that the message was fully rendered
 }
 
 // Add overlay pulse animation
