@@ -721,11 +721,13 @@ class MobileTouchFeedback {
     }
     
     handleTouchEnd(e) {
-        // Clear all active feedback
-        this.activeElements.forEach(element => {
-            this.deactivateFeedback(element);
-        });
-        this.activeElements.clear();
+        // Don't clear animations immediately - let them run for a few seconds like desktop hover
+        setTimeout(() => {
+            this.activeElements.forEach(element => {
+                this.deactivateFeedback(element);
+            });
+            this.activeElements.clear();
+        }, 3000); // Wait 3 seconds to let animations complete (like a long hover)
     }
     
     handleTouchMove(e) {
@@ -800,10 +802,7 @@ function enhanceTouchFeedback() {
         }
         
         /* Enhanced feedback for specific elements */
-        .projects .card.touch-feedback.touch-active {
-            transform: scale(0.98);
-            transition: transform 0.1s ease-out;
-        }
+        /* Project cards use CSS-only animations - no JS transform */
         
         .navbar .menu li a.touch-feedback.touch-active {
             color: #d6212e;
@@ -823,8 +822,8 @@ function enhanceTouchFeedback() {
             transition: transform 0.1s ease-out;
         }
         
-        /* Restore normal state after touch */
-        .touch-feedback:not(.touch-active) {
+        /* Restore normal state after touch - exclude project cards */
+        .touch-feedback:not(.touch-active):not(.projects .card) {
             transform: scale(1) !important;
             transition: transform 0.2s ease-out !important;
         }

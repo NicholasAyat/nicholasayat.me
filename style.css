@@ -2184,17 +2184,12 @@ section.fade-in-section.visible {
 
 /* Disable hover animations on touch devices to fix positioning issues */
 @media (pointer: coarse) {
-    .projects .serv-content .card-link:nth-child(1):hover .card::before,
-    .projects .serv-content .card-link:nth-child(2):hover .card::before,
-    .projects .serv-content .card-link:nth-child(3):hover .card::before {
-        animation: none !important;
-        opacity: 0 !important;
-    }
-    
-    /* Keep basic hover effects but disable complex animations */
+    /* Keep basic hover effects but disable complex animations on the card itself */
+    /* We still want .touch-active::before animations to work */
     .projects .serv-content .card:hover {
         transform: translateY(-5px) scale(1.02) !important;
         transition: transform 0.2s ease !important;
+        /* Remove animation overrides for ::before to allow touch animations */
     }
 }
 
@@ -2317,3 +2312,56 @@ section.fade-in-section.visible {
 }
 
 /* Form Message */
+
+/* Mobile Touch Animations - Trigger desktop animations on touch */
+@media (max-width: 768px), (pointer: coarse), (hover: none) {
+    /* Use the EXACT same animations as desktop hover - triggered by touch-active class */
+    
+    /* Card 1 - Matrix Code Streams (same as desktop hover) */
+    .projects .serv-content .card-link:nth-child(1) .card.touch-active::before {
+        animation: matrix-code-streams 2s linear infinite !important;
+        opacity: 0.9 !important;
+    }
+    
+    /* Card 2 - Snake Path Tracer (same as desktop hover) */
+    .projects .serv-content .card-link:nth-child(2) .card.touch-active::before {
+        animation: snake-path-trace 2.5s ease-in-out infinite !important;
+        opacity: 0.85 !important;
+    }
+    
+    /* Card 3 - Enhanced Stock Pulse (same as desktop hover) */
+    .projects .serv-content .card-link:nth-child(3) .card.touch-active::before {
+        animation: enhanced-stock-pulse 2.5s ease-in-out infinite !important;
+        opacity: 0.85 !important;
+    }
+    
+    /* Disable touch feedback ripple for project cards - they have their own background animations */
+    .projects .serv-content .card.touch-feedback::before {
+        display: none !important;
+    }
+    
+    /* Apply the same card effects as desktop hover for mobile touch */
+    .projects .serv-content .card.touch-active {
+        transform: translateY(-15px) scale(1.05) !important;
+        box-shadow: 
+            0 12px 40px rgba(214,33,46,0.15),
+            0 4px 20px rgba(214,33,46,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.1) !important;
+        border-color: rgba(214, 33, 46, 0.3) !important;
+    }
+    
+    .projects .serv-content .card.touch-active .box {
+        transform: scale(1.05) !important;
+    }
+    
+    .projects .serv-content .card.touch-active i {
+        color: #fff !important;
+        transform: scale(1.1) rotate(5deg) !important;
+        filter: drop-shadow(0 4px 8px rgba(255,255,255,0.3)) !important;
+    }
+    
+    .projects .serv-content .card.touch-active .text {
+        transform: translateY(-2px) !important;
+        text-shadow: 0 2px 8px rgba(255,255,255,0.2) !important;
+    }
+}
