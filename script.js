@@ -335,11 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function initMagneticButtons() {
     const magneticButtons = [
         '.home .home-content a',
-        '.about .about-content .right a', 
-        '.right form .button-area button',
+        '.about .about-content .right a:not(.about-link)', 
+        '.form-submit button',
         '.scroll-up-btn',
-        '.contact .right form .field input',
-        '.contact .right form .field textarea'
+        '#contact-form input',
+        '#contact-form textarea'
     ];
 
     magneticButtons.forEach(selector => {
@@ -362,11 +362,31 @@ function initMagneticButtons() {
                     const magneticY = y * strength;
                     
                     button.style.transform = `translate(${magneticX}px, ${magneticY}px)`;
+                    
+                    // Move checkmark with input field if it exists
+                    const checkmark = button.parentElement?.querySelector('.field-success');
+                    if (checkmark) {
+                        if (button.tagName.toLowerCase() === 'textarea') {
+                            checkmark.style.transform = `translate(${magneticX}px, ${magneticY}px)`;
+                        } else {
+                            checkmark.style.transform = `translate(${magneticX}px, ${magneticY}px) translateY(-50%)`;
+                        }
+                    }
                 }
             }, { passive: true });
             
             button.addEventListener('mouseleave', () => {
                 button.style.transform = 'translate(0px, 0px)';
+                
+                // Reset checkmark position if it exists
+                const checkmark = button.parentElement?.querySelector('.field-success');
+                if (checkmark) {
+                    if (button.tagName.toLowerCase() === 'textarea') {
+                        checkmark.style.transform = 'none';
+                    } else {
+                        checkmark.style.transform = 'translateY(-50%)';
+                    }
+                }
             }, { passive: true });
         });
     });
@@ -993,62 +1013,151 @@ function initSectionNavigation() {
 
 // Enhanced Form Validation
 function initEnhancedFormValidation() {
-    const form = document.querySelector('.contact form');
+    const form = document.getElementById('contact-form');
     if (!form) return;
     
-    const fields = form.querySelectorAll('input, textarea');
+    const formFields = form.querySelectorAll('.form-field');
     
-    // Wrap fields in validation containers
-    fields.forEach(field => {
-        if (field.type === 'submit') return;
+    // Setup validation for each field
+    formFields.forEach(wrapper => {
+        const field = wrapper.querySelector('input, textarea');
+        const errorMsg = wrapper.querySelector('.field-error');
         
-        const wrapper = document.createElement('div');
-        wrapper.className = 'form-field';
-        field.parentNode.insertBefore(wrapper, field);
-        wrapper.appendChild(field);
-        
-        // Add error message element
-        const errorMsg = document.createElement('div');
-        errorMsg.className = 'field-error';
-        wrapper.appendChild(errorMsg);
-        
-        // Add success checkmark
-        const successIcon = document.createElement('div');
-        successIcon.className = 'field-success';
-        successIcon.innerHTML = '✓';
-        wrapper.appendChild(successIcon);
+        if (!field || !errorMsg) return;
         
         // Real-time validation
-        field.addEventListener('blur', () => validateField(field, wrapper, errorMsg));
+        field.addEventListener('blur', () => {
+            validateField(field, wrapper, errorMsg);
+        });
+        
         field.addEventListener('input', () => {
-            if (wrapper.classList.contains('error')) {
-                validateField(field, wrapper, errorMsg);
+            // Only update validation state, don't clear errors too aggressively
+            const isValid = checkFieldValidity(field);
+            const hasValue = field.value.trim();
+            
+            if (isValid && hasValue) {
+                // Field is valid and has content - show success
+                wrapper.classList.remove('error');
+                wrapper.classList.add('success');
+                errorMsg.textContent = '';
+            } else if (!hasValue) {
+                // Field is empty - clear all states
+                wrapper.classList.remove('success', 'error');
+                errorMsg.textContent = '';
+            }
+            // If field has content but is invalid, keep existing error state
+            // This prevents the error from disappearing while user is still typing
+        });
+        
+        // Clear states when field loses focus if empty
+        field.addEventListener('focusout', () => {
+            if (!field.value.trim()) {
+                wrapper.classList.remove('success', 'error');
+                errorMsg.textContent = '';
             }
         });
     });
     
     // Form submission validation
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         let isValid = true;
-        fields.forEach(field => {
-            if (field.type === 'submit') return;
-            
-            const wrapper = field.closest('.form-field');
+        let hasErrors = false;
+        
+        // First, validate all fields and force error display
+        formFields.forEach(wrapper => {
+            const field = wrapper.querySelector('input, textarea');
             const errorMsg = wrapper.querySelector('.field-error');
             
             if (!validateField(field, wrapper, errorMsg)) {
                 isValid = false;
+                hasErrors = true;
             }
         });
         
-        if (isValid) {
-            showFormSuccess(form);
-            // Continue with actual form submission
-            submitForm(form);
+        // Double-check: also verify no error classes exist
+        const errorFields = form.querySelectorAll('.form-field.error');
+        if (errorFields.length > 0) {
+            hasErrors = true;
+            isValid = false;
+        }
+        
+        // Additional check: validate field contents directly
+        const nameField = form.querySelector('input[name="name"]');
+        const emailField = form.querySelector('input[name="email"]');
+        const subjectField = form.querySelector('input[name="subject"]');
+        const messageField = form.querySelector('textarea[name="message"]');
+        
+        if (!nameField?.value.trim() || nameField.value.trim().length < 2) {
+            isValid = false;
+        }
+        
+        if (!emailField?.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value.trim())) {
+            isValid = false;
+        }
+        
+        if (!subjectField?.value.trim() || subjectField.value.trim().length < 3) {
+            isValid = false;
+        }
+        
+        if (!messageField?.value.trim() || messageField.value.trim().length < 10) {
+            isValid = false;
+        }
+        
+        // Only submit if all validations pass
+        if (isValid && !hasErrors) {
+            await submitForm(form);
+        } else {
+            // Show an alert or message if there are still errors
+            console.log('Form submission prevented due to validation errors');
+            
+            // Show user-friendly message
+            showMessage('Please fix the errors below before submitting.', 'error');
+            
+            // Scroll to first error field
+            const firstErrorField = form.querySelector('.form-field.error');
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const inputField = firstErrorField.querySelector('input, textarea');
+                if (inputField) {
+                    setTimeout(() => inputField.focus(), 300);
+                }
+            }
         }
     });
+}
+
+function checkFieldValidity(field) {
+    const value = field.value.trim();
+    
+    // Required field validation
+    if (!value) {
+        return false;
+    }
+    
+    // Email validation
+    if (field.type === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
+    }
+    
+    // Message length validation
+    if (field.name === 'message' && value.length < 10) {
+        return false;
+    }
+    
+    // Name validation (at least 2 characters)
+    if (field.name === 'name' && value.length < 2) {
+        return false;
+    }
+    
+    // Subject validation (at least 3 characters)
+    if (field.name === 'subject' && value.length < 3) {
+        return false;
+    }
+    
+    return true;
 }
 
 function validateField(field, wrapper, errorMsg) {
@@ -1056,70 +1165,115 @@ function validateField(field, wrapper, errorMsg) {
     let isValid = true;
     let message = '';
     
+    // Get field name for display
+    const fieldName = field.name.charAt(0).toUpperCase() + field.name.slice(1);
+    
     // Required field validation
     if (!value) {
         isValid = false;
-        message = `${field.name.charAt(0).toUpperCase() + field.name.slice(1)} is required`;
+        message = `${fieldName} is required`;
     }
     // Email validation
-    else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        isValid = false;
-        message = 'Please enter a valid email address';
+    else if (field.type === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+            isValid = false;
+            message = 'Please enter a valid email address';
+        }
     }
-    // Minimum length validation
+    // Name validation
+    else if (field.name === 'name' && value.length < 2) {
+        isValid = false;
+        message = 'Name must be at least 2 characters long';
+    }
+    // Subject validation
+    else if (field.name === 'subject' && value.length < 3) {
+        isValid = false;
+        message = 'Subject must be at least 3 characters long';
+    }
+    // Message length validation
     else if (field.name === 'message' && value.length < 10) {
         isValid = false;
         message = 'Message must be at least 10 characters long';
     }
     
-    // Update UI
-    wrapper.classList.toggle('error', !isValid);
-    wrapper.classList.toggle('success', isValid && value);
-    errorMsg.textContent = message;
+    // Always update UI based on validation result
+    if (!isValid) {
+        wrapper.classList.add('error');
+        wrapper.classList.remove('success');
+        errorMsg.textContent = message;
+    } else {
+        wrapper.classList.remove('error');
+        wrapper.classList.add('success');
+        errorMsg.textContent = '';
+    }
     
     return isValid;
 }
 
-function showFormSuccess(form) {
-    // Create success overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'form-success-overlay';
-    form.style.position = 'relative';
-    form.appendChild(overlay);
+async function submitForm(form) {
+    const submitButton = form.querySelector('button[type="submit"]');
+    const messageDiv = document.getElementById('form-message');
     
-    // Show success animation
-    setTimeout(() => overlay.classList.add('show'), 100);
+    // Disable form during submission
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending...';
+    form.classList.add('submitting');
     
-    // Remove overlay after animation
-    setTimeout(() => {
-        if (overlay.parentNode) {
-            overlay.parentNode.removeChild(overlay);
+    try {
+        // Prepare form data
+        const formData = new FormData(form);
+        
+        // Submit to Formspree
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            // Success
+            showMessage('Message sent successfully! I\'ll get back to you soon.', 'success');
+            
+            // Reset form with animation
+            setTimeout(() => {
+                form.reset();
+                form.querySelectorAll('.form-field').forEach(wrapper => {
+                    wrapper.classList.remove('success', 'error');
+                    wrapper.querySelector('.field-error').textContent = '';
+                });
+            }, 1000);
+            
+        } else {
+            throw new Error('Network response was not ok');
         }
-    }, 2000);
+        
+    } catch (error) {
+        console.error('Form submission error:', error);
+        showMessage('Sorry, there was an error sending your message. Please try again.', 'error');
+    } finally {
+        // Re-enable form
+        submitButton.disabled = false;
+        submitButton.textContent = 'Send message';
+        form.classList.remove('submitting');
+    }
 }
 
-function submitForm(form) {
-    // Your existing form submission logic here
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+function showMessage(message, type) {
+    const messageDiv = document.getElementById('form-message');
     
-    // Show success message
-    const messageDiv = document.getElementById('form-message') || document.createElement('div');
-    messageDiv.id = 'form-message';
-    messageDiv.className = 'success';
-    messageDiv.textContent = 'Message sent successfully! I will get back to you soon.';
+    messageDiv.textContent = message;
+    messageDiv.className = type;
+    messageDiv.style.display = 'block';
     
-    if (!document.getElementById('form-message')) {
-        form.appendChild(messageDiv);
+    // Auto-hide success messages after 5 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 5000);
     }
-    
-    // Reset form
-    setTimeout(() => {
-        form.reset();
-        form.querySelectorAll('.form-field').forEach(wrapper => {
-            wrapper.classList.remove('success', 'error');
-        });
-    }, 2000);
 }
 
 // Add overlay pulse animation

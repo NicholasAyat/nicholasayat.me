@@ -110,7 +110,7 @@ Feel free to check out my projects and drop me a line if you want to chat tech, 
                     <div class="box">
                         <i class="fa fa-desktop"></i>
                         <div class="text">Personal Web <br> Portfolio</div>
-                        <p>A fully fleshed out personal portfolio (nicholasayat.me) engineered by myself using HTML, CSS, JS, and PHP. <br><br> Made open-source on GitHub. </p>
+                        <p>A fully fleshed out personal portfolio (nicholasayat.me) engineered by myself using HTML, CSS, and JS. <br><br> Made open-source on GitHub. </p>
                     </div>
                 </div>
                 </a>
@@ -171,22 +171,30 @@ Feel free to check out my projects and drop me a line if you want to chat tech, 
                 <div class="column right">
                     <div class="text">Message me</div>
                     <div id="form-message"></div>
-                    <form action="https://formspree.io/f/xnndepvp" method="POST">
-                        <div class="fields">
-                            <div class="field name">
+                    <form id="contact-form" action="https://formspree.io/f/xnndepvp" method="POST">
+                        <div class="form-row">
+                            <div class="form-field">
                                 <input type="text" name="name" placeholder="First & Last Name" required>
+                                <div class="field-success">✓</div>
+                                <div class="field-error"></div>
                             </div>
-                            <div class="field email">
+                            <div class="form-field">
                                 <input type="email" name="email" placeholder="Email" required>
+                                <div class="field-success">✓</div>
+                                <div class="field-error"></div>
                             </div>
                         </div>
-                        <div class="field">
+                        <div class="form-field">
                             <input type="text" name="subject" placeholder="Subject" required>
+                            <div class="field-success">✓</div>
+                            <div class="field-error"></div>
                         </div>
-                        <div class="field textarea">
+                        <div class="form-field">
                             <textarea name="message" cols="30" rows="6" placeholder="Message..." required></textarea>
+                            <div class="field-success">✓</div>
+                            <div class="field-error"></div>
                         </div>
-                        <div class="button-area">
+                        <div class="form-submit">
                             <button type="submit">Send message</button>
                         </div>
                     </form>
