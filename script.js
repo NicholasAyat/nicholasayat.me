@@ -294,9 +294,7 @@ function initMagneticButtons() {
         '.home .home-content a',
         '.about .about-content .right a:not(.about-link)', 
         '.form-submit button',
-        '.scroll-up-btn',
-        '#contact-form input',
-        '#contact-form textarea'
+        '.scroll-up-btn'
     ];
 
     magneticButtons.forEach(selector => {

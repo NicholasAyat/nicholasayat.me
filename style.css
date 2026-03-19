@@ -1380,12 +1380,17 @@ section .title::after {
 .form-field textarea + .field-success {
     top: 15px; /* Adjusted from 20px to move it closer to the top edge */
     transform: translateY(0);
+    transition: opacity 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), visibility 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .form-field.success .field-success {
     opacity: 1;
     visibility: visible;
     animation: checkmark-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.form-field.success textarea + .field-success {
+    animation: checkmark-pop-textarea 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Ensure input has proper padding to avoid text overlap with checkmark */
@@ -1548,6 +1553,21 @@ section .title::after {
     }
     100% { 
         transform: translateY(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes checkmark-pop-textarea {
+    0% { 
+        transform: scale(0);
+        opacity: 0;
+    }
+    60% { 
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% { 
+        transform: scale(1);
         opacity: 1;
     }
 }
